@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_app/models/task_model.dart';
 import 'package:to_do_app/screens/add_edit_task_page.dart';
-
 import 'package:to_do_app/widgets/task_builder.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,8 +15,11 @@ class _HomePageState extends State<HomePage> {
 
   Future<List<TaskModel>> getTask() async {
     await Future.delayed(Duration(seconds: 1));
-
     return taskList;
+  }
+
+  Stream<int> getTaskCount() async* {
+    yield taskList.length;
   }
 
   Future<void> navigateToAddOrEdit() async {
@@ -40,9 +42,15 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(
-          'Tasks (${taskList.length})',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: StreamBuilder<int>(
+          stream: getTaskCount(),
+          builder: (context, snapshot) {
+            final count = snapshot.data ?? 0;
+            return Text(
+              'Tasks ($count)',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            );
+          },
         ),
         actions: [
           Padding(
@@ -56,7 +64,11 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: Column(children: [TaskBuilder(futureTasks: getTask())]),
+        child: Column(
+          children: [
+            TaskBuilder(futureTasks: getTask(), key: ValueKey(taskList.length)),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: navigateToAddOrEdit,
