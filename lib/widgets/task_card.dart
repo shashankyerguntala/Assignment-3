@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:to_do_app/models/task_model.dart';
 
 class TaskCard extends StatelessWidget {
@@ -9,27 +10,88 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    DateTime dueDate = DateFormat('dd-MM-yy').parse(task.dueDate);
+    DateTime today = DateTime.now();
+    DateTime todayDateOnly = DateTime(today.year, today.month, today.day);
+    int daysLeft = dueDate.difference(todayDateOnly).inDays;
+
+    Color urgencyColor;
+    String urgencyText;
+    IconData urgencyIcon;
+
+    if (daysLeft == 0) {
+      urgencyColor = const Color.fromARGB(255, 255, 43, 28);
+      urgencyText = 'Due Today';
+      urgencyIcon = Icons.today_rounded;
+    } else if (daysLeft == 1) {
+      urgencyColor = const Color.fromARGB(255, 255, 157, 0);
+      urgencyText = 'Due Tomorrow';
+      urgencyIcon = Icons.schedule_rounded;
+    } else if (daysLeft <= 3) {
+      urgencyColor = Colors.blue;
+      urgencyText = 'Due in $daysLeft days';
+      urgencyIcon = Icons.calendar_today_rounded;
+    } else {
+      urgencyColor = Colors.grey;
+      urgencyText = 'Due in $daysLeft days';
+      urgencyIcon = Icons.calendar_month_rounded;
+    }
+
     return Card(
+      elevation: 3,
+
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 198, 230, 255),
-          borderRadius: BorderRadius.circular(10),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
         child: Padding(
-          padding: const EdgeInsets.all(14.0),
+          padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
               ReorderableDragStartListener(
                 index: index,
-                child: const Icon(Icons.menu),
+                child: Icon(
+                  Icons.drag_handle_rounded,
+                  color: Colors.grey.shade600,
+                  size: 20,
+                ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 16),
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(task.title, style: const TextStyle(fontSize: 19)),
-                  const SizedBox(height: 5),
-                  Text(task.dueDate, style: const TextStyle(fontSize: 13)),
+                  Text(
+                    (task.title)[0].toUpperCase() + (task.title).substring(1),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: urgencyColor.withAlpha(40),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: urgencyColor),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(urgencyIcon, size: 16, color: urgencyColor),
+                        const SizedBox(width: 6),
+                        Text(
+                          urgencyText,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: urgencyColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ],
