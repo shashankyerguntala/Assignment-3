@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:to_do_app/models/task_model.dart';
 
 class AddEditTaskPage extends StatefulWidget {
@@ -21,6 +22,7 @@ class _AddEditTaskPageState extends State<AddEditTaskPage> {
   late TextEditingController titleController;
   late TextEditingController descriptionController;
   late TextEditingController duedateController;
+  DateTime? selectedDate;
 
   @override
   void initState() {
@@ -41,10 +43,7 @@ class _AddEditTaskPageState extends State<AddEditTaskPage> {
     final description = descriptionController.text;
     final dueDate = duedateController.text;
     if (title.isNotEmpty) {
-      int i = 0;
-      i++;
       final newTask = TaskModel(
-        id: '$i',
         title: title,
         description: description,
         dueDate: dueDate,
@@ -55,6 +54,27 @@ class _AddEditTaskPageState extends State<AddEditTaskPage> {
         context,
       ).showSnackBar(SnackBar(content: Text('Please Enter Valid Details')));
     }
+  }
+
+  void datePicker() async {
+    DateTime now = DateTime.now();
+    DateTime firstDate = DateTime(now.year, now.month, now.day);
+    DateTime lastDate = DateTime(now.year + 1, now.month, now.day);
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: firstDate,
+      lastDate: lastDate,
+    );
+    if (pickedDate != null) {
+      String formattedDate = DateFormat('dd-MM-yy').format(pickedDate);
+      duedateController.text = formattedDate;
+    } else {
+      duedateController.text = 'No date ';
+    }
+    setState(() {
+      selectedDate = pickedDate;
+    });
   }
 
   @override
@@ -73,7 +93,7 @@ class _AddEditTaskPageState extends State<AddEditTaskPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //! title start
+            
             const SizedBox(height: 5),
             Container(
               decoration: BoxDecoration(
@@ -94,7 +114,7 @@ class _AddEditTaskPageState extends State<AddEditTaskPage> {
             ),
             const SizedBox(height: 20),
 
-            //! description start
+            
             Container(
               height: (MediaQuery.of(context).size.height) / 4,
               decoration: BoxDecoration(
@@ -114,7 +134,8 @@ class _AddEditTaskPageState extends State<AddEditTaskPage> {
                 ),
               ),
             ),
-            //! due date start
+
+            
             const SizedBox(height: 20),
 
             Container(
@@ -125,12 +146,22 @@ class _AddEditTaskPageState extends State<AddEditTaskPage> {
 
               child: Padding(
                 padding: const EdgeInsets.only(left: 10, right: 10),
-                child: TextField(
-                  controller: duedateController,
-                  decoration: InputDecoration(
-                    hintText: "Due Date",
-                    border: InputBorder.none,
-                  ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: duedateController,
+                        decoration: InputDecoration(
+                          hintText: "Due Date",
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: datePicker,
+                      icon: Icon(Icons.calendar_month),
+                    ),
+                  ],
                 ),
               ),
             ),
